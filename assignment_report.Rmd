@@ -302,5 +302,71 @@ The geographic revenue analysis reveals that the domestic market is our primary 
 When assessing localized product preferences, the data shows distinct regional commonalities. For example, the Netherlands, France, and Japan all share a common favorite item by physical volume: the 'RABBIT NIGHT LIGHT', which achieved peak volumes of 4,801 units in the Netherlands alone. Meanwhile, the domestic UK market shows a unique preference for bulk volumes of 'PAPER CRAFT, LITTLE BIRDIE' at 80,995 units. From a supply chain perspective, these insights imply that inventory management should be regionalized. High-volume hubs like the Netherlands can be utilized to optimize shipping for cross-border top-sellers, minimizing fulfillment delays for our prominent international markets.
 
 
+## Task 4: Product Recommendation System
+
+
+### Explanation & Assumptions
+
+In this task, we create a product recommendation engine using market basket analysis. The required product is a function that takes the StockCode of a target product and finds which other products are purchased most frequently with it on the same invoice.
+
+Here are the main ideas and assumptions that drive our processing.
+
+1. **Transaction Co-occurrence:** When two products are recorded on the same InvoiceNo, we consider them co-purchased.
+2. **Self-Exclusion Rule:** We do not include the target product in the recommendations since that would create an infinite loop.
+3. **Clean Catalog References:** We pull product descriptions from the product info dataset to clarify the output for end users.
+
+
+### Code
+
+```{r task4_analysis, message=FALSE, warning=FALSE}
+# Load required libraries within the chunk to ensure complete independence
+library(tidyverse)
+
+# Define the standalone recommendation function
+get_product_recommendations <- function(target_stock_code, top_n = 3) {
+  
+  # Identify all unique invoices that contain the target product
+  target_invoices <- clean_orders %>%
+    filter(StockCode == target_stock_code) %>%
+    pull(InvoiceNo) %>%
+    unique()
+  
+  # Isolate all other products present within those exact invoices
+  recommendations <- clean_orders %>%
+    filter(InvoiceNo %in% target_invoices & StockCode != target_stock_code) %>%
+    group_by(StockCode, Description) %>%
+    summarise(Co_Purchase_Count = n(), .groups = "drop") %>%
+    slice_max(order_by = Co_Purchase_Count, n = top_n, with_ties = FALSE)
+  
+  return(recommendations)
+}
+
+# Run a test execution using our top-performing item: REGENCY CAKESTAND 3 TIER (StockCode: 22423)
+test_recommendations <- get_product_recommendations(target_stock_code = "22423", top_n = 3)
+
+# Output a clean tabular format for the report layout
+knitr::kable(test_recommendations, caption = "Top 3 Product Recommendations for StockCode 22423 (REGENCY CAKESTAND 3 TIER)")
+```
+
+
+### Testing & Verification
+
+```{r task4_testing&verification, message=FALSE, warning=FALSE}
+library(tidyverse)
+# Ensure the function returns exactly the number of products requested (3)
+returned_rows <- nrow(test_recommendations)
+print(paste("Number of product recommendations generated:", returned_rows))
+#Confirm that the target item itself was successfully excluded from the outputs
+self_matching_records <- sum(test_recommendations$StockCode == "22423")
+print(paste("Number of self-matching entries in output table:", self_matching_records))
+```
+
+
+### Interpretation of Results
+
+The product recommendation system has employed cross-transactional history to discover latent links between consumer purchases. Analyzing historical transactions for one of our top sellers, the 'REGENCY CAKESTAND 3 TIER' (StockCode: 22423), allows the system to detect items on the same invoice. Results indicate a strong cross-selling relationship for a single themed product group. Based on the results, 'ROSES REGENCY TEACUP AND SAUCER' tops the recommendation with 537 purchases. It is followed by 'GREEN REGENCY TEACUP AND SAUCER' with 529 purchases, and 'PINK REGENCY TEACUP AND SAUCER' with 416 purchases.
+
+These results are very informative from commercial and operational perspectives for optimizing the value of transactions. Rather than viewing these items as separate product catalog items, marketing teams should sell these items together as a cohesive product collection or offer bundled promotions. Additionally, the web design team should use these data points and put a 'Complete the Look' or 'Frequently Bought Together' along with the line of products on the product description page to facilitate user navigation and cross-purchase. This implementation should generate an increase in the average basket value across the retail operations.
+
 
 
