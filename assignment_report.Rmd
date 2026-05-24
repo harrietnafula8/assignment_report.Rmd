@@ -90,3 +90,29 @@ print(paste("Number of remaining cancelled transactions:", cancelled_count))
 missing_desc_count <- sum(is.na(clean_orders$Description))
 print(paste("Number of records missing descriptions:", missing_desc_count))
 ```
+
+
+## Data Visualisation
+
+Below is a horizontal bar chart of our top 10 inventory items to visualize sales performance distribution.
+
+```{r task1_plot, fig.height=5, fig.width=8}
+# Construct a sorted horizontal bar chart for clear interpretation
+ggplot(top_10_products, aes(x = reorder(Description, Total_Revenue), y = Total_Revenue)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Products by Total Revenue",
+    subtitle = "Excludes cancelled transactions",
+    x = "Product Description",
+    y = "Total Revenue (£)"
+  ) +
+  theme_minimal()
+```
+
+
+## Interpretation of Results
+
+The primary metrics show that the remaining key inventory items command less performance focus. Top of the list with £164,814.20 of sales is the REGENCY CAKESTAND 3 TIER. The next two items earned less than 5.49% of platform sales combined. This shows a good baseline of demand for the items, and the platform does not depend on narrower scope sales and revenue to function.
+
+On the contrary, the inventory items that are lowest in sales have negative monetary balances. This includes the item 'Adjust Bad Debt' (-£11,062.06) and various other handling designations. In the normal running of an organization, these records represent financial adjustments, clearance write-offs and adjustments of inventory write-offs due to damages. These are not normal retail transactions. From a management point of view, the presence of negative balances is a concern. The focus should be to control these balances and mitigate exposure of the inventory assets of the organization.
