@@ -23,10 +23,10 @@ By including this statement, we the authors of this work, verify that:
 
 This task requires combining our transactional sales records with the product information dataset to attach descriptions to each transaction. Before conducting any revenue calculations, we must address data quality by filtering out cancelled orders. 
 
-Our core processing rationales and assumptions are:
-1. **Relational Merging:** We apply an inner join to link the transactional data with the product dictionary using the unique `StockCode` identifier. This ensures every analyzed row contains complete product names.
-2. **Cancellations:** Transaction records with an `InvoiceNo` beginning with the letter "C" denote cancelled transactions. These must be removed completely to avoid artificial skewing of sales volumes.
-3. **Revenue Definition:** Financial performance is tracked by calculating gross revenue as the product of the transactional `Quantity` and its specific `UnitPrice`.
+The following core assumptions and models for processing have been employed
+1. **Relational Merging:** In order to ensure that a transaction consists of a complete product name, we perform an inner merge of the transaction table and the product dictionary table on the identifier `StockCode`
+2. **Cancellations:** The first character of a transaction's `InvoiceNo` indicates that the transaction is a cancel, and these are entirely removed from the dataset for the transactions to ensure that the reported sales volume is not artificially overstated.
+3. **Revenue Definition:** The gross revenue for the accounting period is the primary measure of our financial performance of the transactional `Quantity` and its specific `UnitPrice`.
 
 ### R Code & Analysis
 
@@ -297,9 +297,9 @@ ggplot(top_international, aes(x = reorder(Country, Total_Revenue), y = Total_Rev
 
 ### Interpretation of Results
 
-The geographic revenue analysis reveals that the domestic market is our primary driver of financial performance, with the United Kingdom contributing an overwhelming £9,003,097.96 to overall operations. Outside the domestic market, the Netherlands leads international sales with £285,446.34, followed closely by EIRE at £283,453.96 and Germany at £228,867.14. This strong clustering among Western European nations suggests that regional proximity, logistical simplicity, and existing marketing campaigns are highly effective in these territories.
+The revenue analysis identifies the UK as our primary market, contributing an astounding £9,003,097.96 to our overall revenue. In our international markets, our highest revenue source is the Netherlands, generating £285,446.34, followed by EIRE at £283,453.96, and Germany at £228,867.14 in the Western European market. Strong revenue streams from the markets in close range confirm that proximity, ease of logistics, and focus of existing marketing are effective in these markets.
 
-When assessing localized product preferences, the data shows distinct regional commonalities. For example, the Netherlands, France, and Japan all share a common favorite item by physical volume: the 'RABBIT NIGHT LIGHT', which achieved peak volumes of 4,801 units in the Netherlands alone. Meanwhile, the domestic UK market shows a unique preference for bulk volumes of 'PAPER CRAFT, LITTLE BIRDIE' at 80,995 units. From a supply chain perspective, these insights imply that inventory management should be regionalized. High-volume hubs like the Netherlands can be utilized to optimize shipping for cross-border top-sellers, minimizing fulfillment delays for our prominent international markets.
+As we analyze customer preferences for products by markets, we observe some similarities in the markets that the customers represent. For example, the favorite item of customers in the Netherlands, France, and Japan is the 'RABBIT NIGHT LIGHT'. In the Netherlands, the item was sold in the highest volume of 4,801 units. In the UK, the 'PAPER CRAFT, LITTLE BIRDIE' was sold in the highest bulk volume of 80,995 units. From a supply chain management perspective, a good strategy may include significantly optimizing regional inventory management. For cross-border items that are best sellers, we can sell from the Netherlands, which will minimize shipping and give us better fulfillment.
 
 
 ## Task 4: Product Recommendation System
