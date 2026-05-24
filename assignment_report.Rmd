@@ -99,7 +99,7 @@ Below is a horizontal bar chart of our top 10 inventory items to visualize sales
 ```{r task1_plot, fig.height=5, fig.width=8}
 # Construct a sorted horizontal bar chart for clear interpretation
 ggplot(top_10_products, aes(x = reorder(Description, Total_Revenue), y = Total_Revenue)) +
-  geom_col(fill = "steelblue") +
+  geom_col(fill = "darkblue") +
   coord_flip() +
   labs(
     title = "Top 10 Products by Total Revenue",
