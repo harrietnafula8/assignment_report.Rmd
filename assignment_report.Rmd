@@ -156,4 +156,47 @@ knitr::kable(top_products_per_customer, caption = "Most Frequently Purchased Pro
 ```
 
 
+### Code Testing & Verification
+
+```{r task2_testing}
+# Ensure exactly 5 unique high-value customers are being analyzed
+unique_customer_count <- length(unique(top_5_customers$CustomerID))
+print(paste("Number of unique high-value customers isolated:", unique_customer_count))
+
+# Confirm that no missing Customer IDs bypassed our filter stage
+missing_ids <- sum(is.na(top_customer_orders$CustomerID))
+print(paste("Number of missing customer records in filtered cohort:", missing_ids))
+```
+
+
+### Data Visualisation
+To understand the product preferences of these elite shoppers, we construct a faceted bar chart showing the total quantities purchased for their preferred items.
+
+```{r task2_plot, fig.height=6, fig.width=10}
+# Convert CustomerID to a discrete factor to remove scientific notation
+# Wrap long descriptions so they do not overlap or cut off
+plot_data <- top_products_per_customer %>%
+  mutate(
+    CustomerID = as.factor(CustomerID),
+    Clean_Description = stringr::str_wrap(Description, width = 25)
+  )
+
+# Create a grouped visualization with clean wrapped text labels
+ggplot(plot_data, aes(x = reorder(Clean_Description, Total_Quantity), y = Total_Quantity, fill = CustomerID)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~CustomerID, scales = "free") +
+  coord_flip() +
+  labs(
+    title = "Top Product Volumes for High-Value Customers",
+    subtitle = "Isolates the highest-volume item per customer profile",
+    x = "Product Description",
+    y = "Total Physical Volume Purchased"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 9, lineheight = 0.8),
+    strip.text = element_text(face = "bold", size = 11)
+  )
+```
+
 
