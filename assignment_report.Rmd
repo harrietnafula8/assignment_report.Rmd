@@ -77,3 +77,16 @@ kable(top_10_products, caption = "Top 10 Highest-Selling Products by Revenue")
 kable(bottom_10_products, caption = "Bottom 10 Lowest-Selling Products by Revenue")
 kable(top_3_concentration, caption = "Top 3 Products Revenue Concentration Summary")
 ```
+
+
+## Code Testing & Verification
+
+```{r task1_testing}
+# Ensure that absolutely zero cancelled invoices remain in cleaned dataset
+cancelled_count <- sum(str_detect(clean_orders$InvoiceNo, "^C"))
+print(paste("Number of remaining cancelled transactions:", cancelled_count))
+
+# Verify that no row contains missing product descriptions post-merge
+missing_desc_count <- sum(is.na(clean_orders$Description))
+print(paste("Number of records missing descriptions:", missing_desc_count))
+```
