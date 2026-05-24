@@ -302,3 +302,5 @@ The geographic revenue analysis reveals that the domestic market is our primary 
 When assessing localized product preferences, the data shows distinct regional commonalities. For example, the Netherlands, France, and Japan all share a common favorite item by physical volume: the 'RABBIT NIGHT LIGHT', which achieved peak volumes of 4,801 units in the Netherlands alone. Meanwhile, the domestic UK market shows a unique preference for bulk volumes of 'PAPER CRAFT, LITTLE BIRDIE' at 80,995 units. From a supply chain perspective, these insights imply that inventory management should be regionalized. High-volume hubs like the Netherlands can be utilized to optimize shipping for cross-border top-sellers, minimizing fulfillment delays for our prominent international markets.
 
 
+
+
