@@ -116,3 +116,44 @@ ggplot(top_10_products, aes(x = reorder(Description, Total_Revenue), y = Total_R
 The primary metrics show that the remaining key inventory items command less performance focus. Top of the list with £164,814.20 of sales is the REGENCY CAKESTAND 3 TIER. The next two items earned less than 5.49% of platform sales combined. This shows a good baseline of demand for the items, and the platform does not depend on narrower scope sales and revenue to function.
 
 On the contrary, the inventory items that are lowest in sales have negative monetary balances. This includes the item 'Adjust Bad Debt' (-£11,062.06) and various other handling designations. In the normal running of an organization, these records represent financial adjustments, clearance write-offs and adjustments of inventory write-offs due to damages. These are not normal retail transactions. From a management point of view, the presence of negative balances is a concern. The focus should be to control these balances and mitigate exposure of the inventory assets of the organization.
+
+## 2. High-Value Customer Analysis
+
+### Explanation & Assumptions
+
+This project analyzes transactional data to find our best customers. Specifically, we find the top 5 customers who have contributed the most total revenue. After that, we do a deep dive into the data to find their most commonly purchased items by total quantity.
+
+Our core processing rationales and assumptions are:
+1. **Valid Customer Tracking:** Any rows missing a valid CustomerID are excluded from the ranking calculation, as anonymous transactions cannot be attributed to specific high-value customer retention strategies.
+2. **Revenue Metrics Alignment:** Customer spending rankings are determined using the clean data from Task 1, which excludes cancelled orders.
+3. **Volume Definition:** The product preferences for these top buyers are ranked based on the sum of the Quantity variable for each distinct product.
+
+### Code
+
+```{r task2_analysis, message=FALSE, warning=FALSE}
+# Identify the top 5 highest-spending customers
+top_5_customers <- clean_orders %>%
+  filter(!is.na(CustomerID)) %>%
+  group_by(CustomerID) %>%
+  summarise(Total_Spent = sum(Quantity * UnitPrice), .groups = "drop") %>%
+  slice_max(order_by = Total_Spent, n = 5)
+
+# Filter the main dataset to isolate all records for these 5 customers
+top_customer_orders <- clean_orders %>%
+  filter(CustomerID %in% top_5_customers$CustomerID)
+
+# Identify the most frequently purchased product for each of the top 5 customers
+top_products_per_customer <- top_customer_orders %>%
+  group_by(CustomerID, StockCode, Description) %>%
+  summarise(Total_Quantity = sum(Quantity), .groups = "drop") %>%
+  group_by(CustomerID) %>%
+  slice_max(order_by = Total_Quantity, n = 1) %>%
+  ungroup()
+
+# Output clean tabular formats for the report layout
+knitr::kable(top_5_customers, caption = "Top 5 Highest Spending Customers by Total Revenue")
+knitr::kable(top_products_per_customer, caption = "Most Frequently Purchased Product by Volume for Top Customers")
+```
+
+
+
