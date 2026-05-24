@@ -16,3 +16,64 @@ By including this statement, we the authors of this work, verify that:
 * We hereby certify that we have read and understand what the School of Computing, Engineering and Mathematics defines as minor and substantial breaches of misconduct.
 
 \newpage
+
+## 1. Data Preparation & Product Revenue Analysis
+
+### Task Explanation & Assumptions
+
+This task requires combining our transactional sales records with the product information dataset to attach descriptions to each transaction. Before conducting any revenue calculations, we must address data quality by filtering out cancelled orders. 
+
+Our core processing rationales and assumptions are:
+1. **Relational Merging:** We apply an inner join to link the transactional data with the product dictionary using the unique `StockCode` identifier. This ensures every analyzed row contains complete product names.
+2. **Cancellations:** Transaction records with an `InvoiceNo` beginning with the letter "C" denote cancelled transactions. These must be removed completely to avoid artificial skewing of sales volumes.
+3. **Revenue Definition:** Financial performance is tracked by calculating gross revenue as the product of the transactional `Quantity` and its specific `UnitPrice`.
+
+### R Code & Analysis
+
+```{r task1_analysis, message=FALSE, warning=FALSE}
+# Load core tidyverse packages and layout tools
+library(tidyverse)
+library(knitr)
+
+# Load the raw transactional datasets
+orders <- read_csv("project_orders.csv")
+product_info <- read_csv("project_product_info.csv")
+
+# Filter out cancellations and execute the mandatory relational join
+clean_orders <- orders %>%
+  filter(!str_detect(InvoiceNo, "^C")) %>%
+  inner_join(product_info, by = "StockCode")
+
+# Aggregate metrics at the product profile level
+product_summary <- clean_orders %>%
+  group_by(StockCode, Description) %>%
+  summarise(
+    Total_Quantity = sum(Quantity),
+    Total_Revenue = sum(Quantity * UnitPrice),
+    .groups = "drop"
+  )
+
+# Isolate the top 10 highest-performing products by total revenue
+top_10_products <- product_summary %>%
+  slice_max(order_by = Total_Revenue, n = 10)
+
+# Isolate the bottom 10 lowest-performing products by total revenue
+bottom_10_products <- product_summary %>%
+  slice_min(order_by = Total_Revenue, n = 10)
+
+# Evaluate revenue concentration for the top 3 products
+global_revenue_total <- sum(product_summary$Total_Revenue)
+
+top_3_concentration <- product_summary %>%
+  slice_max(order_by = Total_Revenue, n = 3) %>%
+  summarise(
+    Combined_Top3_Revenue = sum(Total_Revenue),
+    Global_Revenue = global_revenue_total,
+    Percentage_Share = (Combined_Top3_Revenue / global_revenue_total) * 100
+  )
+
+# Output well-formatted markdown tables for the final PDF document
+kable(top_10_products, caption = "Top 10 Highest-Selling Products by Revenue")
+kable(bottom_10_products, caption = "Bottom 10 Lowest-Selling Products by Revenue")
+kable(top_3_concentration, caption = "Top 3 Products Revenue Concentration Summary")
+```
