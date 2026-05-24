@@ -199,4 +199,10 @@ ggplot(plot_data, aes(x = reorder(Clean_Description, Total_Quantity), y = Total_
   )
 ```
 
+### Interpretation of Results
+
+The customer-level analysis identifies our top 5 highest-spending client accounts, led by Customer ID 14646 with a total expenditure of £280,206.02, followed closely by Customer ID 18102 at £259,657.30. Isolating these high-value profiles is critical for business strategy, as these top consumers represent corporate buyers or wholesale distributors rather than traditional retail shoppers.
+
+When evaluating individual product preferences by physical volume through our faceted visualization, the results reveal distinct purchasing behaviors for each of these core customers. For instance, Customer ID 14646 shows a massive demand for the 'RABBIT NIGHT LIGHT', ordering over 4,000 units, while Customer ID 12415 focuses bulk purchasing on 'PACK OF 72 RETROSPOT CAKE CASES'. From a commercial perspective, these accounts represent critical revenue streams. Management should implement dedicated client management protocols and bespoke bulk-pricing structures to maintain loyalty, secure retention, and prevent these high-value accounts from moving to competitors.
+
 
