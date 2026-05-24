@@ -170,7 +170,7 @@ print(paste("Number of missing customer records in filtered cohort:", missing_id
 
 
 ### Data Visualisation
-To understand the product preferences of these elite shoppers, we construct a faceted bar chart showing the total quantities purchased for their preferred items.
+To find the large quantity purchasing habits of our customers, we create a faceted bar chart to show the total quantity of items customers purchased.
 
 ```{r task2_plot, fig.height=6, fig.width=10}
 # Convert CustomerID to a discrete factor to remove scientific notation
@@ -201,8 +201,104 @@ ggplot(plot_data, aes(x = reorder(Clean_Description, Total_Quantity), y = Total_
 
 ### Interpretation of Results
 
-The customer-level analysis identifies our top 5 highest-spending client accounts, led by Customer ID 14646 with a total expenditure of £280,206.02, followed closely by Customer ID 18102 at £259,657.30. Isolating these high-value profiles is critical for business strategy, as these top consumers represent corporate buyers or wholesale distributors rather than traditional retail shoppers.
+This part of our analysis shows the top 5 customers who spent the most. The customer who has spent the most is Customer ID 14646 with total spending of £280,206.02, while Customer ID 18102 shows the second highest spending at £259,657.30. The top 5 customers are each representative of a different large customer buying wholesale from our organization.
 
-When evaluating individual product preferences by physical volume through our faceted visualization, the results reveal distinct purchasing behaviors for each of these core customers. For instance, Customer ID 14646 shows a massive demand for the 'RABBIT NIGHT LIGHT', ordering over 4,000 units, while Customer ID 12415 focuses bulk purchasing on 'PACK OF 72 RETROSPOT CAKE CASES'. From a commercial perspective, these accounts represent critical revenue streams. Management should implement dedicated client management protocols and bespoke bulk-pricing structures to maintain loyalty, secure retention, and prevent these high-value accounts from moving to competitors.
+Using our faceted visualization, we see that each of the three customers has unique purchasing habits. For example, Customer ID 14646 has purchased more than 4,000 of the item 'RABBIT NIGHT LIGHT', while Customer ID 12415 has purchased more than 4,000 of the item 'PACK OF 72 RETROSPOT CAKE CASES'. Each of these customers contributes large amounts of revenue to our organization, and we should apply special pricing policies to them to ensure that they stay customers.
+
+
+
+## Task 3: Global Market Analysis
+
+### Explanation & Assumptions
+
+This task investigates the geographic reach of the retailer's customer base. We consolidate financial data to identify how much revenue each country contributes. Additionally, we examine each country’s transaction data to determine its leading product category by total physical sales volume (Quantity).
+
+The reasoned assumptions that form the basis of our processing are:
+
+1. *Geographic Inclusion*: All transactions with a valid country identifier are included. Clean data from Task 1 is used to maintain consistency in calculations and to ensure excluded order cancellations.
+2. *Popularity Measure*: Within each country, product popularity is measured exclusively by physical volume, which is determined by summing the Quantity variable of each unique stock item.
+3. *Tie-Breaker Policy*: When multiple products in a given country exhibit the same maximum quantity, the `slice_max(..., n = 1)` function will select the first matching product to maintain simplicity in the summary table.
+
+### Code
+
+```{r task3_analysis, message=FALSE, warning=FALSE}
+# Geographic Aggregation: Calculate total revenue per country
+country_revenue <- clean_orders %>%
+  group_by(Country) %>%
+  summarise(Total_Revenue = sum(Quantity * UnitPrice), .groups = "drop") %>%
+  arrange(desc(Total_Revenue))
+
+# Identify the most popular product by volume for each country
+# We use str_wrap directly in the data prep so the table and plot labels stay clean!
+country_top_products <- clean_orders %>%
+  group_by(Country, StockCode, Description) %>%
+  summarise(Total_Quantity = sum(Quantity), .groups = "drop") %>%
+  group_by(Country) %>%
+  slice_max(order_by = Total_Quantity, n = 1) %>%
+  ungroup() %>%
+  mutate(Clean_Description = stringr::str_wrap(Description, width = 25)) %>%
+  arrange(desc(Total_Quantity))
+
+# Output clean tabular formats for the top 10 rows for the report layout
+knitr::kable(head(country_revenue, 10), caption = "Top 10 Countries by Total Revenue Generation")
+knitr::kable(head(country_top_products[, c("Country", "StockCode", "Description", "Total_Quantity")], 10), 
+             caption = "Most Popular Product by Volume Across Top 10 Countries")
+```
+
+
+### Code Testing & Verification
+
+```{r task2_testing}
+# Verify that every country present in the clean dataset has exactly one top product entry
+total_unique_countries <- length(unique(clean_orders$Country))
+top_products_rows <- nrow(country_top_products)
+print(paste("Total unique countries:", total_unique_countries))
+print(paste("Number of rows in country top products table:", top_products_rows))
+
+# Confirm that the total calculated country revenue matches our global baseline revenue
+global_baseline <- sum(clean_orders$Quantity * clean_orders$UnitPrice)
+summed_country_revenue <- sum(country_revenue$Total_Revenue)
+print(paste("Does summed country revenue match global baseline?:", identical(all.equal(global_baseline, summed_country_revenue), TRUE)))
+```
+
+
+### Data Visualisation
+
+To analyze performance by country, we develop a horizontal bar chart that shows the revenue total for each of the top international markets. We omit the primary domestic market (United Kingdom) to ensure that the remaining countries displayed on the chart are scaled legibly and appropriately.
+
+
+```{r task3_plot, message=FALSE, warning=FALSE, fig.height=5, fig.width=9}
+# Load libraries inside the chunk to secure absolute execution independence
+library(tidyverse)
+
+# Isolate top 10 international markets excluding the United Kingdom for clean scaling
+top_international <- country_revenue %>%
+  filter(Country != "United Kingdom") %>%
+  slice_max(order_by = Total_Revenue, n = 10)
+
+# Build the publication-ready bar chart
+ggplot(top_international, aes(x = reorder(Country, Total_Revenue), y = Total_Revenue)) +
+  geom_col(fill = "darkred") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Top 10 International Markets by Revenue",
+    subtitle = "Excludes the United Kingdom to prevent visual scaling distortion",
+    x = "Country",
+    y = "Total Revenue (£)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 10, face = "bold"),
+    axis.text.x = element_text(size = 9)
+  )
+```
+
+
+### Interpretation of Results
+
+The geographic revenue analysis reveals that the domestic market is our primary driver of financial performance, with the United Kingdom contributing an overwhelming £9,003,097.96 to overall operations. Outside the domestic market, the Netherlands leads international sales with £285,446.34, followed closely by EIRE at £283,453.96 and Germany at £228,867.14. This strong clustering among Western European nations suggests that regional proximity, logistical simplicity, and existing marketing campaigns are highly effective in these territories.
+
+When assessing localized product preferences, the data shows distinct regional commonalities. For example, the Netherlands, France, and Japan all share a common favorite item by physical volume: the 'RABBIT NIGHT LIGHT', which achieved peak volumes of 4,801 units in the Netherlands alone. Meanwhile, the domestic UK market shows a unique preference for bulk volumes of 'PAPER CRAFT, LITTLE BIRDIE' at 80,995 units. From a supply chain perspective, these insights imply that inventory management should be regionalized. High-volume hubs like the Netherlands can be utilized to optimize shipping for cross-border top-sellers, minimizing fulfillment delays for our prominent international markets.
 
 
